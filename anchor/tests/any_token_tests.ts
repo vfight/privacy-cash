@@ -196,6 +196,7 @@ describe("zkcash any-token (SPL + Token-2022 + permissionless init + fee floor +
     treasury = Keypair.generate();
 
     await Promise.all([
+      fund(provider.wallet.publicKey, 10),
       fund(admin.publicKey, 10),
       fund(randomUser.publicKey, 10),
       fund(relayer.publicKey, 10),
