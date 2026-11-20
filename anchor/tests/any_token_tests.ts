@@ -645,6 +645,9 @@ describe("zkcash any-token (SPL + Token-2022 + permissionless init + fee floor +
     const freshRecipient = Keypair.generate();
     const recipientAta = getAssociatedTokenAddressSync(t22Mint.publicKey, freshRecipient.publicKey, false, TOKEN_2022_PROGRAM_ID);
 
+    const freshDummy = (mint: PublicKey, keypair: UtxoKeypair) =>
+      new Utxo({ lightWasm, amount: 0, keypair, mintAddress: mint.toBase58() });
+
     // 3a. Withdraw 100 VBC with wrong fee_recipient_ata -> rejected with InvalidFeeRecipient
     const wrongFeeAta = getAssociatedTokenAddressSync(t22Mint.publicKey, randomUser.publicKey, false, TOKEN_2022_PROGRAM_ID);
     const smallWithdraw = new BN("100000000000"); // 100 VBC (0.25% = 0.25 VBC < 5 VBC floor)
@@ -655,7 +658,7 @@ describe("zkcash any-token (SPL + Token-2022 + permissionless init + fee floor +
       const { proofArg } = await buildProof({
         tree: t22MerkleTree,
         mint: t22Mint.publicKey,
-        inputs: [out1, dummyIn2],
+        inputs: [out1, freshDummy(t22Mint.publicKey, utxoKeypair)],
         outputs: [wOut1, wOut2],
         extAmount: smallWithdraw.neg(),
         fee: minWithdrawFee,
@@ -704,7 +707,7 @@ describe("zkcash any-token (SPL + Token-2022 + permissionless init + fee floor +
       const { proofArg } = await buildProof({
         tree: t22MerkleTree,
         mint: t22Mint.publicKey,
-        inputs: [out1, dummyIn2],
+        inputs: [out1, freshDummy(t22Mint.publicKey, utxoKeypair)],
         outputs: [wOut1, wOut2],
         extAmount: smallWithdraw.neg(),
         fee: tooLowFee,
@@ -752,7 +755,7 @@ describe("zkcash any-token (SPL + Token-2022 + permissionless init + fee floor +
       const { proofArg, outputCommitments } = await buildProof({
         tree: t22MerkleTree,
         mint: t22Mint.publicKey,
-        inputs: [out1, dummyIn2],
+        inputs: [out1, freshDummy(t22Mint.publicKey, utxoKeypair)],
         outputs: [wOut1, wOut2],
         extAmount: smallWithdraw.neg(),
         fee: minWithdrawFee,
@@ -824,7 +827,7 @@ describe("zkcash any-token (SPL + Token-2022 + permissionless init + fee floor +
       const { proofArg } = await buildProof({
         tree: t22MerkleTree,
         mint: t22Mint.publicKey,
-        inputs: [wOut1, dummyIn2],
+        inputs: [wOut1, freshDummy(t22Mint.publicKey, utxoKeypair)],
         outputs: [lOut1, lOut2],
         extAmount: largeWithdraw.neg(),
         fee: minWithdrawFee,
@@ -872,7 +875,7 @@ describe("zkcash any-token (SPL + Token-2022 + permissionless init + fee floor +
       const { proofArg, outputCommitments } = await buildProof({
         tree: t22MerkleTree,
         mint: t22Mint.publicKey,
-        inputs: [wOut1, dummyIn2],
+        inputs: [wOut1, freshDummy(t22Mint.publicKey, utxoKeypair)],
         outputs: [lOut1, lOut2],
         extAmount: largeWithdraw.neg(),
         fee: largeRateFee,
@@ -995,7 +998,7 @@ describe("zkcash any-token (SPL + Token-2022 + permissionless init + fee floor +
     const { proofArg: wProof } = await buildProof({
       tree: splMerkleTree,
       mint: splMint.publicKey,
-      inputs: [out1, dummyIn2],
+      inputs: [out1, new Utxo({ lightWasm, amount: 0, keypair: utxoKeypair, mintAddress: splMint.publicKey.toBase58() })],
       outputs: [wOut1, wOut2],
       extAmount: withdrawAmount.neg(),
       fee: withdrawFee,
@@ -1116,7 +1119,7 @@ describe("zkcash any-token (SPL + Token-2022 + permissionless init + fee floor +
     const { proofArg: wProof } = await buildProof({
       tree: solMerkleTree,
       mint: SOL_ADDRESS,
-      inputs: [out1, dummyIn2],
+      inputs: [out1, new Utxo({ lightWasm, amount: 0, keypair: utxoKeypair, mintAddress: SOL_ADDRESS.toBase58() })],
       outputs: [wOut1, wOut2],
       extAmount: withdrawAmount.neg(),
       fee: solMinFee,
